@@ -10,6 +10,7 @@ import (
 
 	"cloud.google.com/go/firestore"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 type App struct {
@@ -25,7 +26,20 @@ func NewApp(e *echo.Echo, firestore *firestore.Client) *App {
 }
 
 // Bind the handlers
-func (app *App) Init() {
+func (app *App) Init(prod string) {
+	// var allowedOrigins []string
+	// if prod == "true" {
+	// 	allowedOrigins = []string{"domain-name-of-the-frontend"}
+	// } else {
+	// 	allowedOrigins = []string{"*"}
+	// }
+
+	app.e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"}, // For dev-ourpose only, later to be modified.
+		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
+		AllowHeaders: []string{echo.HeaderAccessControlAllowOrigin, echo.HeaderAccessControlAllowHeaders},
+	}))
+
 	app.e.GET("/", welcome)
 	app.e.POST("/create", app.createShortURL)
 	app.e.GET("/:short-url", app.redirectURL)

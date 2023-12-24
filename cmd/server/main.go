@@ -39,7 +39,7 @@ func main() {
 
 	e := echo.New()
 	app := app.NewApp(e, db)
-	app.Init()
+	app.Init(PROD)
 
 	PORT := os.Getenv("PORT")
 	if PORT == "" {
