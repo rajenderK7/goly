@@ -80,6 +80,9 @@ func (app *App) createShortURL(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "internal server error")
 	}
+	// To allow localhost
+	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
+	c.Response().Header().Set("Access-Control-Allow-Credentials", "true")
 	return c.JSON(http.StatusOK, res)
 }
 
