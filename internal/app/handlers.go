@@ -14,6 +14,10 @@ type ReqBody struct {
 	ShortURL string `json:"short_url,omitempty" firestore:"short_url,omitempty"`
 }
 
+type ErrMessage struct {
+	Message string `json:"message"`
+}
+
 func (app *App) getURLHelper(key, val string, ctx context.Context) ([]*firestore.DocumentSnapshot, error) {
 	return app.db.Collection("urls").
 		Where(key, "==", val).
@@ -52,12 +56,12 @@ func welcome(c echo.Context) error {
 func (app *App) createShortURL(c echo.Context) error {
 	var req, res ReqBody
 	if err := c.Bind(&req); err != nil {
-		return c.String(http.StatusBadRequest, "bad request")
+		return c.JSON(http.StatusBadRequest, ErrMessage{"bad request"})
 	}
 	ctx := c.Request().Context()
 	docs, err := app.getURLHelper("long_url", req.LongURL, ctx)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "internal server error")
+		return c.JSON(http.StatusInternalServerError, ErrMessage{"internal server error"})
 	}
 
 	// Return the short URL if already exists
@@ -68,7 +72,7 @@ func (app *App) createShortURL(c echo.Context) error {
 
 	shortURL, err := app.shortURLHelper(req.LongURL, ctx)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "internal server error")
+		return c.JSON(http.StatusInternalServerError, ErrMessage{"internal server error"})
 	}
 
 	res = ReqBody{
@@ -78,11 +82,9 @@ func (app *App) createShortURL(c echo.Context) error {
 
 	_, _, err = app.db.Collection("urls").Add(ctx, res)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "internal server error")
+		return c.JSON(http.StatusInternalServerError, ErrMessage{"internal server error"})
+
 	}
-	// To allow localhost
-	c.Response().Header().Set("Access-Control-Allow-Origin", "*")
-	c.Response().Header().Set("Access-Control-Allow-Credentials", "true")
 	return c.JSON(http.StatusOK, res)
 }
 
@@ -95,10 +97,10 @@ func (app *App) redirectURL(c echo.Context) error {
 	ctx := c.Request().Context()
 	docs, err := app.getURLHelper("short_url", req.ShortURL, ctx)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "internal server error")
+		return c.JSON(http.StatusInternalServerError, ErrMessage{"internal server error"})
 	}
 	if len(docs) == 0 {
-		return c.String(http.StatusBadRequest, "Invalid URL")
+		return c.JSON(http.StatusBadRequest, ErrMessage{"Invalid URL"})
 	}
 
 	docs[0].DataTo(&res)

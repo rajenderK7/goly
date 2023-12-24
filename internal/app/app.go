@@ -27,6 +27,7 @@ func NewApp(e *echo.Echo, firestore *firestore.Client) *App {
 
 // Bind the handlers
 func (app *App) Init(prod string) {
+
 	// var allowedOrigins []string
 	// if prod == "true" {
 	// 	allowedOrigins = []string{"domain-name-of-the-frontend"}
@@ -34,11 +35,7 @@ func (app *App) Init(prod string) {
 	// 	allowedOrigins = []string{"*"}
 	// }
 
-	app.e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"}, // For dev-ourpose only, later to be modified.
-		AllowMethods: []string{echo.GET, echo.PUT, echo.POST, echo.DELETE},
-		AllowHeaders: []string{echo.HeaderAccessControlAllowOrigin, echo.HeaderAccessControlAllowHeaders},
-	}))
+	app.e.Use(middleware.CORS())
 
 	app.e.GET("/", welcome)
 	app.e.POST("/create", app.createShortURL)
