@@ -10,7 +10,7 @@ import (
 )
 
 type ReqBody struct {
-	LongURL  string `json:"long_url,omitempty" firestore:"long_url,omitempty"`
+	LongURL  string `json:"long_url" firestore:"long_url"`
 	ShortURL string `json:"short_url,omitempty" firestore:"short_url,omitempty"`
 }
 
@@ -55,7 +55,7 @@ func welcome(c echo.Context) error {
 // Route: POST api/create
 func (app *App) createShortURL(c echo.Context) error {
 	var req, res ReqBody
-	if err := c.Bind(&req); err != nil {
+	if err := c.Bind(&req); err != nil || req.LongURL == "" {
 		return c.JSON(http.StatusBadRequest, ErrMessage{"bad request"})
 	}
 	ctx := c.Request().Context()
